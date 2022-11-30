@@ -1,5 +1,7 @@
 namespace ERSApiLayer;
+using ERSModelsLayer;
 using ERSBusinessLayer;
+using ERSRepositoryLayer;
 
 public class Program
 {
@@ -14,6 +16,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IBusinessLayer, BusinessLayer>();
+        builder.Services.AddSingleton<IRepoLayer, RepoLayer>();
 
         var app = builder.Build();
 
