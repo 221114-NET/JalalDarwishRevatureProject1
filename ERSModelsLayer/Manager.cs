@@ -10,5 +10,9 @@ namespace ERSModelsLayer
     // {
     //     //How to know if current user is manager or just employee?
     //     //public Queue<Reimbursement>? PendingTickets {get; set;}
+    //     public Manager(string? emailAddress, RoleHeirarchy role) : base(emailAddress, role)
+    //     {
+
+    //     }
     // }
 }

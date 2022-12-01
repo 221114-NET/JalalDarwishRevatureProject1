@@ -30,8 +30,15 @@ namespace ERSApiLayer.Controllers
         [HttpPut("Register")]
         public ActionResult RegisterUser(LoginData loginD)
         {
-            bus.RegisterUser(loginD);
-            return Ok();
+            if(bus.RegisterUser(loginD))
+            {
+                return Created("we made it boys", loginD);
+            }
+            else
+            {
+                return BadRequest();
+            }
+            
         }
 
         [HttpPost("Submit New Ticket")]

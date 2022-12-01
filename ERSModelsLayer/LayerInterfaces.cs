@@ -8,7 +8,7 @@ namespace ERSModelsLayer
     public interface IBusinessLayer
     {
         public void UserLoginRequest(LoginData loginD);
-        public void RegisterUser(LoginData loginD);
+        public bool RegisterUser(LoginData loginD);
     }
 
     public interface IRepoLayer

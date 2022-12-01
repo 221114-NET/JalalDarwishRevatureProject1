@@ -8,16 +8,25 @@ public class BusinessLayer : IBusinessLayer
     public Employee? CurrentUser { get; set; } //How to differentiate manager vs user?
     public Queue<Reimbursement>? PendingTicketQueue { get; set; } //3? Separate lists: employee own, manager pending, master ticket list for writing back to DB
     public List<Reimbursement>? PersonalTicketList { get; set; }
-    private List<Reimbursement>? MasterTicketList { get; set; } //When / How to initialize list?
+    private List<Reimbursement>? MasterTicketList { get; set; } //When / How to initialize list? won't need with SQL?
 
     public BusinessLayer(IRepoLayer iRepo)
     {
         repo = iRepo;
     }
 
-    public void RegisterUser(LoginData loginD)
+    public bool RegisterUser(LoginData loginD)
     {
-        Regex emailValid = new Regex(@"[a-zA-Z]{4}@[a-zA-Z].[a-z]"); //Finish email matching pattern
+        Regex emailValid = new Regex(@"^[a-zA-Z0-9]{1,12}@[a-zA-Z]+.[a-zA-Z]{2,6}$");
+        if(emailValid.IsMatch(loginD.EmailAddress)) //if address is valid, send to repo layer
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
     }
 
     public void UserLoginRequest(LoginData loginD)

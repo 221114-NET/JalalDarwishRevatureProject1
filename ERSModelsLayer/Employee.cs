@@ -16,14 +16,14 @@ namespace ERSModelsLayer
     public class Employee
     {
         public string? EmailAddress {get; set;}
-        public string? Password {get; set;}
+        //public string? Password {get; set;}
         //public List<Reimbursement>? ReimbursementTickets {get; set;}
         public RoleHeirarchy Role {get; set;}
 
-        public Employee(string? emailAddress, string? password, RoleHeirarchy role)
+        public Employee(string? emailAddress, /*string? password,*/ RoleHeirarchy role)
         {
             EmailAddress = emailAddress;
-            Password = password;
+            //Password = password;
             Role = role;
         }
 

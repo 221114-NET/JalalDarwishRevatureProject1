@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ERSModelsLayer
 {
-    public class LoginData
+    public struct LoginData
     {
         public string? EmailAddress {get; set;}
         public string? Password {get; set;}
