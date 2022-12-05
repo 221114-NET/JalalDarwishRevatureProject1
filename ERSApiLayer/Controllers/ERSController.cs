@@ -21,13 +21,28 @@ namespace ERSApiLayer.Controllers
         }
 
         [HttpPost("Login")]
-        public ActionResult UserLogin(Employee emp)
+        public ActionResult UserLogin(LoginData loginD)
         {
+            bus.UserLoginRequest(loginD);
             return Ok();
         }
 
         [HttpPut("Register")]
-        public ActionResult RegisterUser(Employee emp)
+        public ActionResult RegisterUser(LoginData loginD)
+        {
+            if(bus.RegisterUser(loginD))
+            {
+                return Created("we made it boys", loginD);
+            }
+            else
+            {
+                return BadRequest();
+            }
+            
+        }
+
+        [HttpPost("Submit New Ticket")]
+        public ActionResult SubmitNewTicket(Reimbursement ticket)
         {
             return Ok();
         }
