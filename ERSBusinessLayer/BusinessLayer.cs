@@ -5,41 +5,31 @@ using System.Text.RegularExpressions;
 public class BusinessLayer : IBusinessLayer
 {
     private IRepoLayer? repo;
-    public Employee? CurrentUser { get; set; } //How to differentiate manager vs user?
-    public Queue<Reimbursement>? PendingTicketQueue { get; set; } //3? Separate lists: employee own, manager pending, master ticket list for writing back to DB
-    public List<Reimbursement>? PersonalTicketList { get; set; }
-    private List<Reimbursement>? MasterTicketList { get; set; } //When / How to initialize list? won't need with SQL?
 
     public BusinessLayer(IRepoLayer iRepo)
     {
         repo = iRepo;
     }
 
-    public bool RegisterUser(LoginData loginD)
+    public Employee? RegisterUser(string email, string password)
     {
-        Regex emailValid = new Regex(@"^[a-zA-Z0-9]{1,12}@[a-zA-Z]+.[a-zA-Z]{2,6}$");
-        if(emailValid.IsMatch(loginD.EmailAddress)) //if address is valid, send to repo layer
+        //Maybe separate into validation function for email and pass?
+        Regex emailValid = new Regex(@"^[a-zA-Z0-9]{1,12}@[a-zA-Z]+.[a-zA-Z]{2,6}$"); //accepts up to 12 alphanumeric @ anynumber of alphabet . alpha 2-6 chars
+        if (emailValid.IsMatch(email)) //if address is valid, send to repo layer
         {
-            return true;
+            Employee? emp = repo.RegisterUser(email, password); //check if employee exists?
+            return emp;
         }
         else
         {
-            return false;
+            return null;
         }
 
     }
 
-    public void UserLoginRequest(LoginData loginD)
+    public void UserLogin(string email, string password)
     {
-        if(repo.GetUserLoginInfo(loginD, CurrentUser))
-        {
-            //repo.GetTicketList(CurrentUser); If login is successful, populate ticket list
-        }
-        else
-        {
-            CurrentUser = null; //Check info in Repolayer => DB, create currentUser object for session
-        }
-        
+        repo.UserLogin(email, password);
     }
 
 }

@@ -21,23 +21,25 @@ namespace ERSApiLayer.Controllers
         }
 
         [HttpPost("Login")]
-        public ActionResult UserLogin(LoginData loginD)
+        public ActionResult UserLogin(string email, string password)
         {
-            bus.UserLoginRequest(loginD);
+            bus.UserLogin(email, password);
             return Ok();
         }
 
         [HttpPut("Register")]
-        public ActionResult RegisterUser(LoginData loginD)
+        public ActionResult<Employee> RegisterUser(string email, string password)
         {
-            if(bus.RegisterUser(loginD))
-            {
-                return Created("we made it boys", loginD);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            Employee temp = bus.RegisterUser(email, password);
+            return Created("uri/path", temp); //#TODO
+            // if(bus.RegisterUser(loginD))
+            // {
+            //    return Created("we made it boys", loginD);
+            // }
+            // else
+            // {
+            //     return BadRequest();
+            // }
             
         }
 

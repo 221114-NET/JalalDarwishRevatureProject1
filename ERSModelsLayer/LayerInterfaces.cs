@@ -7,12 +7,13 @@ namespace ERSModelsLayer
 {
     public interface IBusinessLayer
     {
-        public void UserLoginRequest(LoginData loginD);
-        public bool RegisterUser(LoginData loginD);
+        public void UserLogin(string email, string password);
+        public Employee? RegisterUser(string email, string password);
     }
 
     public interface IRepoLayer
     {
-        public bool GetUserLoginInfo(LoginData loginD, Employee emp); //consider int return for more scenarios?
+        public bool UserLogin(string email, string password); //consider int return for more scenarios?
+        public Employee? RegisterUser(string email, string password);
     }
 }

@@ -5,26 +5,17 @@ using System.Threading.Tasks;
 
 namespace ERSModelsLayer
 {
-    /// <summary>
-    /// Enum to keep track of role: Employee = 1, Manager = 2
-    /// </summary>
-    public enum RoleHeirarchy:int
-    {
-        EMPLOYEE = 1,
-        MANAGER
-    }
     public class Employee
     {
         public string? EmailAddress {get; set;}
-        //public string? Password {get; set;}
-        //public List<Reimbursement>? ReimbursementTickets {get; set;}
-        public RoleHeirarchy Role {get; set;}
+        public int UserID {get; set;}
+        public bool ManagerStatus {get; set;}
 
-        public Employee(string? emailAddress, /*string? password,*/ RoleHeirarchy role)
+        public Employee(string? emailAddress, int userID, bool managerStatus = false)
         {
             EmailAddress = emailAddress;
-            //Password = password;
-            Role = role;
+            UserID = userID;
+            ManagerStatus = managerStatus;
         }
 
     }
