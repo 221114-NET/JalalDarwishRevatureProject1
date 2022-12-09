@@ -13,11 +13,9 @@ public class BusinessLayer : IBusinessLayer
 
     public Employee? RegisterUser(string email, string password)
     {
-        //Maybe separate into validation function for email and pass?
-        Regex emailValid = new Regex(@"^[a-zA-Z0-9]{1,12}@[a-zA-Z]+.[a-zA-Z]{2,6}$"); //accepts up to 12 alphanumeric @ anynumber of alphabet . alpha 2-6 chars
-        if (emailValid.IsMatch(email)) //if address is valid, send to repo layer
+        if (InputValidation.ValidateEmail(email) && InputValidation.ValidatePassword(password)) //if address and pw are valid, send to repo layer
         {
-            Employee? emp = repo.RegisterUser(email, password); //check if employee exists?
+            Employee? emp = repo!.RegisterUser(email, password);
             return emp;
         }
         else
@@ -27,9 +25,21 @@ public class BusinessLayer : IBusinessLayer
 
     }
 
-    public void UserLogin(string email, string password)
+    /// <summary>
+    /// Function to log in based on email and password
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="password"></param>
+    /// <returns>returns UserID on success, -1 for incorrect information, -2 for invalid input</returns>
+    public int UserLogin(string email, string password)
     {
-        repo.UserLogin(email, password);
+        if (InputValidation.ValidateEmail(email) && InputValidation.ValidatePassword(password))
+        {
+            return repo!.UserLogin(email, password);
+        }
+        else
+        {
+            return -2;
+        }
     }
-
 }

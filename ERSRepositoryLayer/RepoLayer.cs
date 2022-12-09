@@ -14,15 +14,10 @@ public class RepoLayer : IRepoLayer
         AzureConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json").Build().GetSection("ConnectionStrings")["ersDb"]!;
     }
 
-    public bool UserLogin(string email, string password)
-    {
-        //Get info from DB and put into emp
-        return false;
-    }
-
     Employee? IRepoLayer.RegisterUser(string email, string password)
     {
         //Maybe make connection in constructor instead, and reuse
+        int userID = -1;
         SqlConnection conn = new SqlConnection(AzureConnectionString);
         try
         {
@@ -35,18 +30,48 @@ public class RepoLayer : IRepoLayer
             comm.ExecuteNonQuery();
 
             comm.CommandText = "SELECT UserID FROM registered_Users WHERE Email = @email";
-            //comm.ExecuteReader()
+            SqlDataReader read = comm.ExecuteReader();
+            if (read.Read())
+            {
+                userID = read.GetInt32(0);
+            }
 
         }
         catch (SqlException exc)
         {
-            return null;
+            System.Console.WriteLine(exc.Message);
+            return new Employee("user with that email already exists", userID, false);
         }
         finally
         {
-
             conn.Close();
         }
-        return new Employee("testing connection string", 1, false);
+        return new Employee(email, userID, false);
+    }
+
+    //Session ID table if you have time, timestamped + SQLDatareader.GetGuid as Guid data type
+    public int UserLogin(string email, string password)
+    {
+        int userID = -1;
+
+        SqlConnection conn = new SqlConnection(AzureConnectionString);
+        try
+        {
+            SqlCommand comm = new SqlCommand("SELECT UserID FROM registered_Users WHERE Email = @email AND Passwords = @password", conn);
+            comm.Parameters.AddWithValue("@email", email);
+            comm.Parameters.AddWithValue("@password", password);
+
+            conn.Open();
+            SqlDataReader read = comm.ExecuteReader();
+            if(read.Read())
+            {
+                userID = read.GetInt32(0);
+            }
+        }
+        finally
+        {
+            conn.Close();
+        }
+        return userID;
     }
 }

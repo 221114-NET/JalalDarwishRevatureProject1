@@ -20,28 +20,41 @@ namespace ERSApiLayer.Controllers
             bus = iBus;
         }
 
-        [HttpPost("Login")]
-        public ActionResult UserLogin(string email, string password)
-        {
-            bus.UserLogin(email, password);
-            return Ok();
-        }
-
         [HttpPut("Register")]
         public ActionResult<Employee> RegisterUser(string email, string password)
         {
-            Employee temp = bus.RegisterUser(email, password);
-            return Created("uri/path", temp); //#TODO
-            // if(bus.RegisterUser(loginD))
-            // {
-            //    return Created("we made it boys", loginD);
-            // }
-            // else
-            // {
-            //     return BadRequest();
-            // }
-            
+            Employee? newEmp = bus.RegisterUser(email, password);
+            if (newEmp == null)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Created("uri/path", newEmp);
+            }
         }
+
+        [HttpPost("Login")]
+        public ActionResult<int> UserLogin(string email, string password)
+        {
+            int loginResult = bus.UserLogin(email, password);
+            switch (loginResult)
+            {
+                case -2:
+                    {
+                        return BadRequest();
+                    }
+                case -1:
+                    {
+                        return NotFound();
+                    }
+                default:
+                    {
+                        return Ok(loginResult);
+                    }
+            }
+        }
+
 
         [HttpPost("Submit New Ticket")]
         public ActionResult SubmitNewTicket(Reimbursement ticket)

@@ -11,11 +11,11 @@ namespace ERSModelsLayer
         OTHER
     }
     /// <summary>
-    /// Enum for reimbursment status: Pending=0, Approved=1, Rejected=2
+    /// Enum for reimbursment status: Pending=1, Approved=2, Rejected=3
     /// </summary>
     public enum ReimbursementStatus:int
     {
-        PENDING = 0,
+        PENDING = 1,
         APPROVED,
         REJECTED
     }
