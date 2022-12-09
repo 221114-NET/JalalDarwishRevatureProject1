@@ -1,6 +1,5 @@
 ﻿namespace ERSBusinessLayer;
 using ERSModelsLayer;
-using System.Text.RegularExpressions;
 
 public class BusinessLayer : IBusinessLayer
 {
@@ -41,5 +40,13 @@ public class BusinessLayer : IBusinessLayer
         {
             return -2;
         }
+    }
+
+    public Reimbursement? SubmitNewTicket(Reimbursement ticket)
+    {
+        if(ticket.UserID < 1) return null; //Quick simple input validation
+
+        ticket.ReimburseStatus = ReimbursementStatus.PENDING; //Make sure status is pending
+        return repo!.SubmitNewTicket(ticket);
     }
 }

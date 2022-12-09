@@ -50,15 +50,16 @@ namespace ERSApiLayer.Controllers
                     }
                 default:
                     {
-                        return Ok(loginResult);
+                        return Ok(loginResult); //returns UserID
                     }
             }
         }
 
 
         [HttpPost("Submit New Ticket")]
-        public ActionResult SubmitNewTicket(Reimbursement ticket)
+        public ActionResult<Reimbursement> SubmitNewTicket(Reimbursement ticket)
         {
+            bus.SubmitNewTicket(ticket);
             return Ok();
         }
     }

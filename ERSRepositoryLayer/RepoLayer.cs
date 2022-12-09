@@ -74,4 +74,33 @@ public class RepoLayer : IRepoLayer
         }
         return userID;
     }
+
+    public Reimbursement? SubmitNewTicket(Reimbursement ticket)
+    {
+
+        SqlConnection conn = new SqlConnection(AzureConnectionString);
+        try
+        {
+            SqlCommand comm = new SqlCommand("INSERT INTO reimbursment_Tickets (ReimbursmentType, DollarAmount, ReimbursmentDescription, TicketStatus, UserID) VALUES (@reimType, @dollars, @desc, @status, @user)", conn);
+            comm.Parameters.AddWithValue("@reimType", ticket.ReimburseType);
+            comm.Parameters.AddWithValue("@dollars", ticket.DollarAmount);
+            comm.Parameters.AddWithValue("@desc", ticket.Description);
+            comm.Parameters.AddWithValue("@status", ticket.ReimburseStatus);
+            comm.Parameters.AddWithValue("@user", ticket.UserID);
+
+            conn.Open();
+            comm.ExecuteNonQuery();
+
+        }
+        catch
+        {
+            //return something to denote invalid user ID
+        }
+        finally
+        {
+            conn.Close();
+        }
+
+        return ticket;
+    }
 }

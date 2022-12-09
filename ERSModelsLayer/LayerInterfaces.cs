@@ -9,11 +9,13 @@ namespace ERSModelsLayer
     {
         public int UserLogin(string email, string password);
         public Employee? RegisterUser(string email, string password);
+        public Reimbursement? SubmitNewTicket(Reimbursement ticket);
     }
 
     public interface IRepoLayer
     {
         public int UserLogin(string email, string password);
         public Employee? RegisterUser(string email, string password);
+        public Reimbursement? SubmitNewTicket(Reimbursement ticket);
     }
 }

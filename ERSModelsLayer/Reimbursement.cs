@@ -1,16 +1,6 @@
 namespace ERSModelsLayer
 {
-    /// <summary>
-    /// Enum for reimbursment type: Travel=0, Food=1, Car Rental=2, Other=3
-    /// </summary>
-    public enum ReimbursementType:int
-    {
-        TRAVEL = 0,
-        FOOD,
-        CARRENTAL,
-        OTHER
-    }
-    /// <summary>
+   /// <summary>
     /// Enum for reimbursment status: Pending=1, Approved=2, Rejected=3
     /// </summary>
     public enum ReimbursementStatus:int
@@ -22,20 +12,21 @@ namespace ERSModelsLayer
 
     public class Reimbursement
     {
-        public string? EmployeeMail {get; set;}
-        public ReimbursementType ReimburseType {get; set;}
-        public double DollarAmount {get; set;}
+        public int UserID {get; set;}
+        public string ReimburseType {get; set;}
+        public decimal DollarAmount {get; set;} //using decimal to match database data type
         public string? Description {get; set;}
         public ReimbursementStatus ReimburseStatus {get; set;}
 
-        public Reimbursement(string? employeeMail = "none", ReimbursementType reimburseType = ReimbursementType.OTHER, double dollarAmount = 0.0, string? description = "default",
+        public Reimbursement(int userID = -1, string reimburseType = "default", decimal dollarAmount = 0.0M, string? description = "default",
          ReimbursementStatus reimburseStatus = ReimbursementStatus.PENDING)
         {
-            EmployeeMail = employeeMail;
+            UserID = userID;
             ReimburseType = reimburseType;
             DollarAmount = dollarAmount;
             Description = description;
             ReimburseStatus = reimburseStatus;
+
         }
     }
 }
