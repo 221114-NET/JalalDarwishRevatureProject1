@@ -63,7 +63,7 @@ public class RepoLayer : IRepoLayer
 
             conn.Open();
             SqlDataReader read = comm.ExecuteReader();
-            if(read.Read())
+            if (read.Read())
             {
                 userID = read.GetInt32(0);
             }
@@ -75,26 +75,43 @@ public class RepoLayer : IRepoLayer
         return userID;
     }
 
-    public Reimbursement? SubmitNewTicket(Reimbursement ticket)
+    public Reimbursement? SubmitNewTicket(Reimbursement? ticket)
     {
 
         SqlConnection conn = new SqlConnection(AzureConnectionString);
+        SqlConnection validationConn = new SqlConnection(AzureConnectionString);
         try
         {
-            SqlCommand comm = new SqlCommand("INSERT INTO reimbursment_Tickets (ReimbursmentType, DollarAmount, ReimbursmentDescription, TicketStatus, UserID) VALUES (@reimType, @dollars, @desc, @status, @user)", conn);
+            //Validating that the sent in UserID exists
+            SqlCommand comm = new SqlCommand("SELECT UserID FROM registered_Users WHERE UserID = @user", validationConn);
+            comm.Parameters.AddWithValue("@user", ticket!.UserID);
+            validationConn.Open();
+            try
+            {
+                using (SqlDataReader userValid = comm.ExecuteReader())
+                {
+                    if (!userValid.Read()) throw new InvalidDataException(); //If UserID doesn't exist, make return ticket null. Possible to do check as part of insert?
+                }
+            }
+            finally
+            {
+                validationConn.Close();
+            }
+
+            //UserID is valid, so create new reimbursment to add
+            comm = new SqlCommand("INSERT INTO reimbursment_Tickets (ReimbursmentType, DollarAmount, ReimbursmentDescription, TicketStatus, UserID) VALUES (@reimType, @dollars, @desc, @status, @user)", conn);
             comm.Parameters.AddWithValue("@reimType", ticket.ReimburseType);
             comm.Parameters.AddWithValue("@dollars", ticket.DollarAmount);
             comm.Parameters.AddWithValue("@desc", ticket.Description);
             comm.Parameters.AddWithValue("@status", ticket.ReimburseStatus);
             comm.Parameters.AddWithValue("@user", ticket.UserID);
-
             conn.Open();
             comm.ExecuteNonQuery();
 
         }
         catch
         {
-            //return something to denote invalid user ID
+            ticket = null;
         }
         finally
         {
@@ -102,5 +119,42 @@ public class RepoLayer : IRepoLayer
         }
 
         return ticket;
+    }
+
+    int IRepoLayer.ChangeTicketStatus(int userID, int reimbursmentID)
+    {
+
+        using(SqlConnection validationConn = new SqlConnection(AzureConnectionString))
+        {
+            using(SqlCommand validationComm = new SqlCommand("SELECT Manager FROM registered_users WHERE UserID = @user", validationConn))
+            {
+                validationComm.Parameters.AddWithValue("@user", userID);
+                using(SqlDataReader manRead = validationComm.ExecuteReader())
+                {
+                    try
+                    {
+                        if(manRead.Read())
+                        {
+                            //Check return bit if manager, throw exception if not   
+                        }
+                    }
+                    catch
+                    {
+                        //return invalid input int
+                    }
+                }
+
+            }
+        }
+
+
+
+
+
+
+
+
+
+        return reimbursmentID;
     }
 }

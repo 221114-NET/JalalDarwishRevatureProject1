@@ -57,9 +57,25 @@ namespace ERSApiLayer.Controllers
 
 
         [HttpPost("Submit New Ticket")]
-        public ActionResult<Reimbursement> SubmitNewTicket(Reimbursement ticket)
+        public ActionResult<Reimbursement> SubmitNewTicket(Reimbursement? ticket)
         {
-            bus.SubmitNewTicket(ticket);
+            ticket = bus!.SubmitNewTicket(ticket);
+
+            if(ticket != null)
+            {
+                return Created("uri/ticketPath", ticket);
+            }
+            else
+            {
+                return NotFound();   
+            }
+        }
+
+        [HttpPut("Manager:Change Ticket Status")]
+        public ActionResult ChangeTicketStatus(int userID, int reimbursmentID)
+        {
+
+            bus.ChangeTicketStatus(userID, reimbursmentID);
             return Ok();
         }
     }

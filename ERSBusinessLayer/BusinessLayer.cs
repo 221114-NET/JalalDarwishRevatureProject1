@@ -42,11 +42,20 @@ public class BusinessLayer : IBusinessLayer
         }
     }
 
-    public Reimbursement? SubmitNewTicket(Reimbursement ticket)
+    public Reimbursement? SubmitNewTicket(Reimbursement? ticket)
     {
-        if(ticket.UserID < 1) return null; //Quick simple input validation
+        if (ticket.UserID < 1) return null; //Quick simple input validation
 
         ticket.ReimburseStatus = ReimbursementStatus.PENDING; //Make sure status is pending
         return repo!.SubmitNewTicket(ticket);
+    }
+
+    int IBusinessLayer.ChangeTicketStatus(int userID, int reimbursmentID)
+    {
+        if (userID >= 1 && reimbursmentID >= 1)
+        {
+            return repo.ChangeTicketStatus(userID, reimbursmentID);
+        }
+        else return -2;//Quick simple input validation to make sure UserID and ReimbursmentID are potentally valid values
     }
 }
