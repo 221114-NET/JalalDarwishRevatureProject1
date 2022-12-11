@@ -1,45 +1,68 @@
 ﻿namespace ERSBusinessLayer;
+
+using System.Collections.Generic;
 using ERSModelsLayer;
-using System.Text.RegularExpressions;
 
 public class BusinessLayer : IBusinessLayer
 {
     private IRepoLayer? repo;
-    public Employee? CurrentUser { get; set; } //How to differentiate manager vs user?
-    public Queue<Reimbursement>? PendingTicketQueue { get; set; } //3? Separate lists: employee own, manager pending, master ticket list for writing back to DB
-    public List<Reimbursement>? PersonalTicketList { get; set; }
-    private List<Reimbursement>? MasterTicketList { get; set; } //When / How to initialize list? won't need with SQL?
 
     public BusinessLayer(IRepoLayer iRepo)
     {
         repo = iRepo;
     }
 
-    public bool RegisterUser(LoginData loginD)
+    public Employee? RegisterUser(string email, string password)
     {
-        Regex emailValid = new Regex(@"^[a-zA-Z0-9]{1,12}@[a-zA-Z]+.[a-zA-Z]{2,6}$");
-        if(emailValid.IsMatch(loginD.EmailAddress)) //if address is valid, send to repo layer
+        if (InputValidation.ValidateEmail(email) && InputValidation.ValidatePassword(password)) //if address and pw are valid, send to repo layer
         {
-            return true;
+            Employee? emp = repo!.RegisterUser(email, password);
+            return emp;
         }
         else
         {
-            return false;
+            return null;
         }
 
     }
 
-    public void UserLoginRequest(LoginData loginD)
+    /// <summary>
+    /// Function to log in based on email and password
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="password"></param>
+    /// <returns>returns UserID on success, -1 for incorrect information, -2 for invalid input</returns>
+    public int UserLogin(string email, string password)
     {
-        if(repo.GetUserLoginInfo(loginD, CurrentUser))
+        if (InputValidation.ValidateEmail(email) && InputValidation.ValidatePassword(password))
         {
-            //repo.GetTicketList(CurrentUser); If login is successful, populate ticket list
+            return repo!.UserLogin(email, password);
         }
         else
         {
-            CurrentUser = null; //Check info in Repolayer => DB, create currentUser object for session
+            return -2;
         }
-        
     }
 
+    public Reimbursement? SubmitNewTicket(Reimbursement? ticket)
+    {
+        if (ticket.UserID < 1) return null; //Quick simple input validation
+
+        ticket.ReimburseStatus = ReimbursementStatus.PENDING; //Make sure status is pending
+        return repo!.SubmitNewTicket(ticket);
+    }
+
+    public int ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
+    {
+        if (userID >= 1 && reimbursmentID >= 1)
+        {
+            return repo.ChangeTicketStatus(userID, reimbursmentID, newStatus);
+        }
+        else return -4;//Quick simple input validation to make sure UserID and ReimbursmentID are potentally valid values
+    }
+
+    public List<Reimbursement>? GetPendingTickets(int managerID)
+    {
+        return repo.GetPendingTickets(managerID);
+    }
 }

@@ -20,31 +20,85 @@ namespace ERSApiLayer.Controllers
             bus = iBus;
         }
 
-        [HttpPost("Login")]
-        public ActionResult UserLogin(LoginData loginD)
-        {
-            bus.UserLoginRequest(loginD);
-            return Ok();
-        }
-
         [HttpPut("Register")]
-        public ActionResult RegisterUser(LoginData loginD)
+        public ActionResult<Employee> RegisterUser(string email, string password)
         {
-            if(bus.RegisterUser(loginD))
-            {
-                return Created("we made it boys", loginD);
-            }
-            else
+            Employee? newEmp = bus.RegisterUser(email, password);
+            if (newEmp == null)
             {
                 return BadRequest();
             }
-            
+            else
+            {
+                return Created("uri/path", newEmp);
+            }
         }
 
-        [HttpPost("Submit New Ticket")]
-        public ActionResult SubmitNewTicket(Reimbursement ticket)
+        [HttpPost("Login")]
+        public ActionResult<int> UserLogin(string email, string password)
         {
-            return Ok();
+            int loginResult = bus.UserLogin(email, password);
+            switch (loginResult)
+            {
+                case -2:
+                    {
+                        return BadRequest();
+                    }
+                case -1:
+                    {
+                        return NotFound();
+                    }
+                default:
+                    {
+                        return Ok(loginResult); //returns UserID
+                    }
+            }
+        }
+
+
+        [HttpPost("Submit New Ticket")]
+        public ActionResult<Reimbursement> SubmitNewTicket(Reimbursement? ticket)
+        {
+            ticket = bus!.SubmitNewTicket(ticket);
+
+            if (ticket != null)
+            {
+                return Created("uri/ticketPath", ticket);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPut("Change Ticket Status")]
+        public ActionResult ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
+        {
+
+            int returnHandler = bus.ChangeTicketStatus(userID, reimbursmentID, newStatus);
+            switch (returnHandler)
+            {
+                case -4: //invalid input
+                case -2: //invalid userID
+                case -1: //invalid reimbursmentID or attempting to change non ticket value
+                    {
+                        return BadRequest();
+                    }
+                case -3: //unauthorized
+                    {
+                        return Unauthorized();
+                    }
+                default:
+                    {
+                        return Ok();
+                    }
+            }
+        }
+
+        [HttpGet("Manager Get Pending Tickets")]
+        public List<Reimbursement>? GetPendingTickets(int managerID)
+        {
+            return bus.GetPendingTickets(managerID);
         }
     }
 }
