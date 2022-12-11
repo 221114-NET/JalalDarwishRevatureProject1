@@ -164,22 +164,22 @@ public class RepoLayer : IRepoLayer
         return returnValue;
     }
 
-     public List<Reimbursement>? GetPendingTickets(int managerID)
+    public List<Reimbursement>? GetPendingTickets(int managerID)
     {
         int validMan = ManagerValidation(managerID);
         List<Reimbursement> pendingTicketsList = new List<Reimbursement>();
 
-        if(validMan == 1)
+        if (validMan == 1)
         {
-            using(SqlConnection conn = new SqlConnection(AzureConnectionString))
+            using (SqlConnection conn = new SqlConnection(AzureConnectionString))
             {
-                using(SqlCommand comm = new SqlCommand("SELECT * FROM reimbursment_Tickets WHERE TicketStatus = 1", conn))
+                using (SqlCommand comm = new SqlCommand("SELECT * FROM reimbursment_Tickets WHERE TicketStatus = 1", conn))
                 {
                     try
                     {
                         conn.Open();
                         SqlDataReader dataReader = comm.ExecuteReader();
-                        while(dataReader.Read())
+                        while (dataReader.Read())
                         {
                             pendingTicketsList.Add(new Reimbursement(dataReader.GetInt32(0), dataReader.GetString(1), dataReader.GetDecimal(2), dataReader.GetString(3), (ReimbursementStatus)dataReader.GetInt32(4), dataReader.GetInt32(5)));
                         }
@@ -194,6 +194,101 @@ public class RepoLayer : IRepoLayer
 
 
         return pendingTicketsList;
+    }
+
+    public List<Reimbursement>? GetReimbursements(int userID, ReimbursementStatus ticketFilter)
+    {
+        List<Reimbursement> filteredList = new List<Reimbursement>();
+        int returnValue = UserValidation(userID);
+        if (returnValue > 0)
+        {
+            using (SqlConnection conn = new SqlConnection(AzureConnectionString))
+            {
+                using (SqlCommand comm = new SqlCommand("SELECT * FROM reimbursment_Tickets WHERE UserID = @user AND TicketStatus = @ticketStatus", conn))
+                {
+                    comm.Parameters.AddWithValue("@user", userID);
+                    comm.Parameters.AddWithValue("@ticketStatus", (int)ticketFilter);
+                    try
+                    {
+                        conn.Open();
+                        SqlDataReader tickReader = comm.ExecuteReader();
+                        while (tickReader.Read())
+                        {
+                            filteredList.Add(new Reimbursement(tickReader.GetInt32(0), tickReader.GetString(1), tickReader.GetDecimal(2), tickReader.GetString(3), (ReimbursementStatus)tickReader.GetInt32(4), tickReader.GetInt32(5)));
+                        }
+                    }
+                    finally
+                    {
+                        conn.Close();
+                    }
+                }
+            }
+        }
+        return filteredList; //Consider null return for invalid userID
+
+    }
+
+    public int EditAccountInformation(int userID, string email, string password)
+    {
+        int returnValue = UserValidation(userID);
+        if (returnValue > 0)
+        {
+            using (SqlConnection conn = new SqlConnection(AzureConnectionString))
+            {
+                using (SqlCommand comm = new SqlCommand("UPDATE registered_Users SET Email = @email, Passwords = @password WHERE UserID = @userID", conn))
+                {
+                    try
+                    {
+                        comm.Parameters.AddWithValue("@email", email);
+                        comm.Parameters.AddWithValue("@password", password);
+                        comm.Parameters.AddWithValue("@userID", userID);
+                        conn.Open();
+                        if(comm.ExecuteNonQuery() == 0) returnValue = -1; //-1: user does not exist
+
+                    }
+                    catch(SqlException exc)
+                    {
+                        //logger stuff
+                    }
+                    finally
+                    {
+                        conn.Close();
+                    }
+                }
+            }
+        }
+        return returnValue;
+    }
+
+
+    private int UserValidation(int userID)
+    {
+        int returnValue = userID;
+        using (SqlConnection conn = new SqlConnection(AzureConnectionString))
+        {
+            using (SqlCommand comm = new SqlCommand("SELECT UserID FROM registered_Users WHERE UserID = @user", conn))
+            {
+                try
+                {
+                    comm.Parameters.AddWithValue("@user", userID);
+                    conn.Open();
+                    using (SqlDataReader reader = comm.ExecuteReader())
+                    {
+                        if (!reader.Read()) throw new InvalidDataException(); //userID does not exist, could be session ID?
+                    }
+
+                }
+                catch
+                {
+                    returnValue = -1;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+        }
+        return returnValue; //Custom returns for errors?
     }
 
     /// <summary>
