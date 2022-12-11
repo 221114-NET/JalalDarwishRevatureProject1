@@ -1,15 +1,8 @@
 namespace ERSUnitTesting;
 
+using System.Collections.Generic;
 using ERSBusinessLayer;
 using ERSModelsLayer;
-
-internal class fakeRepo : IRepoLayer
-{
-    public bool GetUserLoginInfo(LoginData loginD, Employee emp)
-    {
-        return true;
-    }
-}
 
 public class UnitTest1
 {
@@ -18,14 +11,91 @@ public class UnitTest1
     [InlineData("!nvalid@email.com", "password", false)]
     [InlineData("invalid@ema!l.com", "password", false)]
     [InlineData("invalid@email.commocs", "password", false)]
-    public void TestUserRegistrationValidation(string eTest, string pwTest, bool result)
+    [InlineData("valid@email.com", "!nvalidpassword", false)]
+    public void TestUserRegistration(string eTest, string pwTest, bool result)
     {
         BusinessLayer bus = new BusinessLayer(new fakeRepo());
 
-        LoginData ld;
-        ld.EmailAddress = eTest;
-        ld.Password = pwTest;
+        bool testSuccess = bus.RegisterUser(eTest, pwTest) != null ? true : false;
 
-        Assert.Equal(result, bus.RegisterUser(ld));
+        Assert.Equal(result, testSuccess);
     }
+
+    [Theory]
+    [InlineData("real@email.com", "password", 1)]
+    [InlineData("", "password", -2)]
+    [InlineData("real@email.com", "", -2)]
+    public void TestUserLogin(string eTest, string pwTest, int result)
+    {
+        BusinessLayer bus = new BusinessLayer(new fakeRepo());
+
+        int testSuccess = bus.UserLogin(eTest, pwTest);
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    [Theory]
+    [InlineData(1, true)]
+    [InlineData(-1, false)]
+    public void TestTicketSubmissionForValidUserID(int testID, bool result)
+    {
+        Reimbursement fakeTick = new Reimbursement(userID: testID); //passing userID by name to constructor
+        BusinessLayer bus = new BusinessLayer(new fakeRepo());
+
+        bool testSuccess = bus.SubmitNewTicket(fakeTick) != null ? true : false;
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    [Theory]
+    [InlineData(1, 1, 1)] //all valid inputs
+    [InlineData(-1, 1, -4)] //invalid userID
+    [InlineData(1, -1, -4)] //invalid reimbursementID
+    public void TestChangeTicketStatusForValidUserIDAndReimbursementID(int userID, int reimbursementID, int result)
+    {
+        BusinessLayer bus = new BusinessLayer(new fakeRepo());
+
+        int testSuccess = bus.ChangeTicketStatus(userID, reimbursementID, ReimbursementStatus.APPROVED);
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    [Theory]
+    [InlineData(1, "valid@email.com", "validpw", 1)]
+    [InlineData(-1, "valid@email.com", "validpw", -2)]
+    [InlineData(1, "!nvalid@email.com", "validpw", -2)]
+    [InlineData(1, "valid@email.com", "!nvalidpw", -2)]
+    public void TestEditAccountInformationAgainstUserIDEmailAndPassword(int userID, string eTest, string pwTest, int result)
+    {
+        BusinessLayer bus = new BusinessLayer(new fakeRepo());
+
+        int testSuccess = bus.EditAccountInformation(userID, eTest, pwTest);
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    [Theory]
+    [InlineData("valid@email.com", true)]
+    [InlineData("!nvalid@email.com", false)]
+    [InlineData("invalid@3ma!l.com", false)]
+    [InlineData("invalid@email.com7777", false)]
+    public void TestEmailInputValidation(string eTest, bool result)
+    {
+        bool testSuccess = InputValidation.ValidateEmail(eTest);
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    [Theory]
+    [InlineData("Validpass1", true)]
+    [InlineData("!nvalidpass", false)]
+    [InlineData("no", false)]
+    public void TestPasswordInputValidation(string pwTest, bool result)
+    {
+        bool testSuccess = InputValidation.ValidatePassword(pwTest);
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    //#TODO repo get tests
 }
