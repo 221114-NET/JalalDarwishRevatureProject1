@@ -121,40 +121,79 @@ public class RepoLayer : IRepoLayer
         return ticket;
     }
 
-    int IRepoLayer.ChangeTicketStatus(int userID, int reimbursmentID)
+    /// <summary>
+    /// Function to change pending ticket status
+    /// </summary>
+    /// <param name="userID">userID of a manager</param>
+    /// <param name="reimbursmentID">ID of ticket to change</param>
+    /// <param name="newStatus">new status of ticket from ReimbursmentStatus enum</param>
+    /// <returns>-3 for unauthorized, -2 for invalid UserID, -1 for invalid reimbursment ticket ID or trying to change non pending ticket, 1 for success</returns>
+    int IRepoLayer.ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
     {
-
-        using(SqlConnection validationConn = new SqlConnection(AzureConnectionString))
+        //Manager validation could be own function
+        bool managerStatus = true;
+        using (SqlConnection validationConn = new SqlConnection(AzureConnectionString))
         {
-            using(SqlCommand validationComm = new SqlCommand("SELECT Manager FROM registered_users WHERE UserID = @user", validationConn))
+            using (SqlCommand validationComm = new SqlCommand("SELECT Manager FROM registered_users WHERE UserID = @user", validationConn))
             {
                 validationComm.Parameters.AddWithValue("@user", userID);
-                using(SqlDataReader manRead = validationComm.ExecuteReader())
+                validationConn.Open();
+                using (SqlDataReader manRead = validationComm.ExecuteReader())
                 {
                     try
                     {
-                        if(manRead.Read())
+                        if (manRead.Read())
                         {
-                            //Check return bit if manager, throw exception if not   
+                            managerStatus = manRead.GetBoolean(0);
+                        }
+                        else
+                        {
+                            reimbursmentID = -2; //no matching UserID
                         }
                     }
-                    catch
+                    finally
                     {
-                        //return invalid input int
+                        validationConn.Close();
                     }
                 }
 
             }
         }
+        if (managerStatus) //Specified user is a manager > execute ticket status change
+        {
+            using (SqlConnection conn = new SqlConnection(AzureConnectionString))
+            {
+                using (SqlCommand comm = new SqlCommand("UPDATE reimbursment_Tickets SET TicketStatus = @status WHERE ReimbursmentID = @ticketID AND TicketStatus = 1", conn))
+                {
+                    comm.Parameters.AddWithValue("@status", ((int)newStatus));
+                    comm.Parameters.AddWithValue("@ticketID", reimbursmentID);
+                    conn.Open();
+                    try
+                    {
+                        if (comm.ExecuteNonQuery() != 0)
+                        {
+                            reimbursmentID = 1; //success
+                        }
+                        else
+                        {
+                            reimbursmentID = -1; //trying to change non pending, or invalid ticketID
+                        }
+                    }
+                    finally
+                    {
+                        conn.Close();
+                    }
 
-
-
-
-
-
-
-
+                }
+            }
+        }
+        else reimbursmentID = -3; //not a manager
 
         return reimbursmentID;
+    }
+
+    private int ManagerValidation(int userID)
+    {
+        
     }
 }

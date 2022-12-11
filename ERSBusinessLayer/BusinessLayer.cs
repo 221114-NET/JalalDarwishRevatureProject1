@@ -50,12 +50,12 @@ public class BusinessLayer : IBusinessLayer
         return repo!.SubmitNewTicket(ticket);
     }
 
-    int IBusinessLayer.ChangeTicketStatus(int userID, int reimbursmentID)
+    int IBusinessLayer.ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
     {
         if (userID >= 1 && reimbursmentID >= 1)
         {
-            return repo.ChangeTicketStatus(userID, reimbursmentID);
+            return repo.ChangeTicketStatus(userID, reimbursmentID, newStatus);
         }
-        else return -2;//Quick simple input validation to make sure UserID and ReimbursmentID are potentally valid values
+        else return -4;//Quick simple input validation to make sure UserID and ReimbursmentID are potentally valid values
     }
 }

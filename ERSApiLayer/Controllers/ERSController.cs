@@ -61,22 +61,44 @@ namespace ERSApiLayer.Controllers
         {
             ticket = bus!.SubmitNewTicket(ticket);
 
-            if(ticket != null)
+            if (ticket != null)
             {
                 return Created("uri/ticketPath", ticket);
             }
             else
             {
-                return NotFound();   
+                return NotFound();
             }
         }
 
-        [HttpPut("Manager:Change Ticket Status")]
-        public ActionResult ChangeTicketStatus(int userID, int reimbursmentID)
+        [HttpPut("Change Ticket Status")]
+        public ActionResult ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
         {
 
-            bus.ChangeTicketStatus(userID, reimbursmentID);
-            return Ok();
+            int returnHandler = bus.ChangeTicketStatus(userID, reimbursmentID, newStatus);
+            switch (returnHandler)
+            {
+                case -4: //invalid input
+                case -2: //invalid userID
+                case -1: //invalid reimbursmentID or attempting to change non ticket value
+                    {
+                        return BadRequest();
+                    }
+                case -3: //unauthorized
+                    {
+                        return Unauthorized();
+                    }
+                default:
+                    {
+                        return Ok();
+                    }
+            }
+        }
+
+        [HttpGet("Manager Get Pending Tickets")]
+        public ActionResult GetPendingTickets()
+        {
+            
         }
     }
 }
