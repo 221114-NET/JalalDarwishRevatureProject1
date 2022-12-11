@@ -20,7 +20,8 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IBusinessLayer, BusinessLayer>();
-        builder.Services.AddSingleton<IRepoLayer, RepoLayer>();
+        builder.Services.AddScoped<IRepoLayer, RepoLayer>();
+        builder.Services.AddSingleton<ILogger, RepoLogger>();
 
         var app = builder.Build();
 

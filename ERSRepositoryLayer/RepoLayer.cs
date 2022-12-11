@@ -9,15 +9,16 @@ public class RepoLayer : IRepoLayer
 {
     //Credit to Tyrel Marx for this method of how to keep connection string off GitHub
     private readonly string AzureConnectionString;
+    private ILogger logger;
 
-    public RepoLayer()
+    public RepoLayer(ILogger iLogger)
     {
         AzureConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json").Build().GetSection("ConnectionStrings")["ersDb"]!;
+        logger = iLogger;
     }
 
     Employee? IRepoLayer.RegisterUser(string email, string password)
     {
-        //Maybe make connection in constructor instead, and reuse
         int userID = -1;
         SqlConnection conn = new SqlConnection(AzureConnectionString);
         try
@@ -38,9 +39,9 @@ public class RepoLayer : IRepoLayer
             }
 
         }
-        catch (SqlException exc)
+        catch (Exception exc)
         {
-            System.Console.WriteLine(exc.Message);
+            logger.ErrorLog(exc);
             return new Employee("user with that email already exists", userID, false);
         }
         finally
@@ -67,6 +68,7 @@ public class RepoLayer : IRepoLayer
             if (read.Read())
             {
                 userID = read.GetInt32(0);
+                logger.LoginRecord(userID, email);
             }
         }
         finally
@@ -110,8 +112,9 @@ public class RepoLayer : IRepoLayer
             comm.ExecuteNonQuery();
 
         }
-        catch
+        catch (Exception exc)
         {
+            logger.ErrorLog(exc);
             ticket = null;
         }
         finally
@@ -152,6 +155,10 @@ public class RepoLayer : IRepoLayer
                             returnValue = -1; //trying to change non pending, or invalid ticketID
                         }
                     }
+                    catch (Exception exc)
+                    {
+                        logger.ErrorLog(exc);
+                    }
                     finally
                     {
                         conn.Close();
@@ -183,6 +190,10 @@ public class RepoLayer : IRepoLayer
                         {
                             pendingTicketsList.Add(new Reimbursement(dataReader.GetInt32(0), dataReader.GetString(1), dataReader.GetDecimal(2), dataReader.GetString(3), (ReimbursementStatus)dataReader.GetInt32(4), dataReader.GetInt32(5)));
                         }
+                    }
+                    catch (Exception exc)
+                    {
+                        logger.ErrorLog(exc);
                     }
                     finally
                     {
@@ -217,6 +228,10 @@ public class RepoLayer : IRepoLayer
                             filteredList.Add(new Reimbursement(tickReader.GetInt32(0), tickReader.GetString(1), tickReader.GetDecimal(2), tickReader.GetString(3), (ReimbursementStatus)tickReader.GetInt32(4), tickReader.GetInt32(5)));
                         }
                     }
+                    catch (Exception exc)
+                    {
+                        logger.ErrorLog(exc);
+                    }
                     finally
                     {
                         conn.Close();
@@ -243,12 +258,12 @@ public class RepoLayer : IRepoLayer
                         comm.Parameters.AddWithValue("@password", password);
                         comm.Parameters.AddWithValue("@userID", userID);
                         conn.Open();
-                        if(comm.ExecuteNonQuery() == 0) returnValue = -1; //-1: user does not exist
+                        if (comm.ExecuteNonQuery() == 0) returnValue = -1; //-1: user does not exist
 
                     }
-                    catch(SqlException exc)
+                    catch (Exception exc)
                     {
-                        //logger stuff
+                        logger.ErrorLog(exc);
                     }
                     finally
                     {
@@ -278,8 +293,9 @@ public class RepoLayer : IRepoLayer
                     }
 
                 }
-                catch
+                catch (Exception exc)
                 {
+                    logger.ErrorLog(exc);
                     returnValue = -1;
                 }
                 finally
@@ -324,6 +340,10 @@ public class RepoLayer : IRepoLayer
                         {
                             returnValue = -2; //no matching UserID
                         }
+                    }
+                    catch (Exception exc)
+                    {
+                        logger.ErrorLog(exc);
                     }
                     finally
                     {
