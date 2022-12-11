@@ -18,6 +18,8 @@ namespace ERSModelsLayer
         public Reimbursement? SubmitNewTicket(Reimbursement ticket);
         public int ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus);
         public List<Reimbursement>? GetPendingTickets(int managerID);
+        public List<Reimbursement>? GetReimbursements(int userID, ReimbursementStatus ticketFilter);
+        public int EditAccountInformation(int userID, string email, string password);
     }
 
     public interface IRepoLayer
@@ -35,5 +37,7 @@ namespace ERSModelsLayer
         /// <returns>-3 for unauthorized, -2 for invalid UserID, -1 for invalid reimbursment ticket ID or trying to change non pending ticket, 1 for success</returns>
         public int ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus);
         public List<Reimbursement>? GetPendingTickets(int managerID);
+        public List<Reimbursement>? GetReimbursements(int userID, ReimbursementStatus ticketFilter);
+        public int EditAccountInformation(int userID, string email, string password);
     }
 }

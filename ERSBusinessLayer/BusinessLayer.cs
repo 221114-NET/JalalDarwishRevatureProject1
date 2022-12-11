@@ -65,4 +65,25 @@ public class BusinessLayer : IBusinessLayer
     {
         return repo.GetPendingTickets(managerID);
     }
+
+    public List<Reimbursement>? GetReimbursements(int userID, ReimbursementStatus ticketFilter)
+    {
+        return repo.GetReimbursements(userID, ticketFilter);
+    }
+
+    /// <summary>
+    /// Method to edit passed in user's email and password
+    /// </summary>
+    /// <param name="userID">user to edit</param>
+    /// <param name="email">new email</param>
+    /// <param name="password">new password</param>
+    /// <returns>userID for success, -1 for invalid user, -2 for invalid input</returns>
+    public int EditAccountInformation(int userID, string email, string password)
+    {
+        if(userID < 1) return -2; //quick simple validation
+        if(!InputValidation.ValidateEmail(email)) return -2; //Invalid input
+        if(!InputValidation.ValidatePassword(password)) return -2; //Invalid input
+
+        return repo.EditAccountInformation(userID, email, password);
+    }
 }

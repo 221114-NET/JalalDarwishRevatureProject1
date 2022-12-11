@@ -100,5 +100,32 @@ namespace ERSApiLayer.Controllers
         {
             return bus.GetPendingTickets(managerID);
         }
+
+        [HttpGet("Employee Get Own Tickets")]
+        public List<Reimbursement>? GetReimbursements(int userID, ReimbursementStatus ticketFilter)
+        {
+            return bus.GetReimbursements(userID, ticketFilter);
+        }
+
+        [HttpPut("Edit Own Account Information")]
+        public ActionResult<Employee> EditAccountInformation(int userID, string email, string password)
+        {
+            int errorCheck = bus.EditAccountInformation(userID, email, password);
+            switch (errorCheck)
+            {
+                case -2:
+                    {
+                        return BadRequest();
+                    }
+                case -1:
+                    {
+                        return NotFound();
+                    }
+                default:
+                    {
+                        return Ok();
+                    }
+            }
+        }
     }
 }
