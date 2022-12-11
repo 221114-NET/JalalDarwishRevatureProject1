@@ -96,9 +96,9 @@ namespace ERSApiLayer.Controllers
         }
 
         [HttpGet("Manager Get Pending Tickets")]
-        public ActionResult GetPendingTickets()
+        public List<Reimbursement>? GetPendingTickets(int managerID)
         {
-            
+            return bus.GetPendingTickets(managerID);
         }
     }
 }

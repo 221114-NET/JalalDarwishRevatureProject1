@@ -12,21 +12,22 @@ namespace ERSModelsLayer
 
     public class Reimbursement
     {
-        public int UserID {get; set;}
+        public int ReimbursmentID {get; set;}
         public string ReimburseType {get; set;}
         public decimal DollarAmount {get; set;} //using decimal to match database data type
         public string? Description {get; set;}
         public ReimbursementStatus ReimburseStatus {get; set;}
+        public int UserID {get; set;}
 
-        public Reimbursement(int userID = -1, string reimburseType = "default", decimal dollarAmount = 0.0M, string? description = "default",
-         ReimbursementStatus reimburseStatus = ReimbursementStatus.PENDING)
+        public Reimbursement(int reimbursmentID = -1, string reimburseType = "default", decimal dollarAmount = 0.0M, string? description = "default",
+         ReimbursementStatus reimburseStatus = ReimbursementStatus.PENDING, int userID = -1)
         {
-            UserID = userID;
+            ReimbursmentID = reimbursmentID;
             ReimburseType = reimburseType;
             DollarAmount = dollarAmount;
             Description = description;
             ReimburseStatus = reimburseStatus;
-
+            UserID = userID;
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿namespace ERSBusinessLayer;
+
+using System.Collections.Generic;
 using ERSModelsLayer;
 
 public class BusinessLayer : IBusinessLayer
@@ -50,12 +52,17 @@ public class BusinessLayer : IBusinessLayer
         return repo!.SubmitNewTicket(ticket);
     }
 
-    int IBusinessLayer.ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
+    public int ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
     {
         if (userID >= 1 && reimbursmentID >= 1)
         {
             return repo.ChangeTicketStatus(userID, reimbursmentID, newStatus);
         }
         else return -4;//Quick simple input validation to make sure UserID and ReimbursmentID are potentally valid values
+    }
+
+    public List<Reimbursement>? GetPendingTickets(int managerID)
+    {
+        return repo.GetPendingTickets(managerID);
     }
 }

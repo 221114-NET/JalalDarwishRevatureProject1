@@ -1,5 +1,6 @@
 ﻿namespace ERSRepositoryLayer;
 
+using System.Collections.Generic;
 using ERSModelsLayer;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -128,38 +129,10 @@ public class RepoLayer : IRepoLayer
     /// <param name="reimbursmentID">ID of ticket to change</param>
     /// <param name="newStatus">new status of ticket from ReimbursmentStatus enum</param>
     /// <returns>-3 for unauthorized, -2 for invalid UserID, -1 for invalid reimbursment ticket ID or trying to change non pending ticket, 1 for success</returns>
-    int IRepoLayer.ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
+    public int ChangeTicketStatus(int userID, int reimbursmentID, ReimbursementStatus newStatus)
     {
-        //Manager validation could be own function
-        bool managerStatus = true;
-        using (SqlConnection validationConn = new SqlConnection(AzureConnectionString))
-        {
-            using (SqlCommand validationComm = new SqlCommand("SELECT Manager FROM registered_users WHERE UserID = @user", validationConn))
-            {
-                validationComm.Parameters.AddWithValue("@user", userID);
-                validationConn.Open();
-                using (SqlDataReader manRead = validationComm.ExecuteReader())
-                {
-                    try
-                    {
-                        if (manRead.Read())
-                        {
-                            managerStatus = manRead.GetBoolean(0);
-                        }
-                        else
-                        {
-                            reimbursmentID = -2; //no matching UserID
-                        }
-                    }
-                    finally
-                    {
-                        validationConn.Close();
-                    }
-                }
-
-            }
-        }
-        if (managerStatus) //Specified user is a manager > execute ticket status change
+        int returnValue = ManagerValidation(userID);
+        if (returnValue == 1) //Specified user is a manager > execute ticket status change
         {
             using (SqlConnection conn = new SqlConnection(AzureConnectionString))
             {
@@ -172,11 +145,11 @@ public class RepoLayer : IRepoLayer
                     {
                         if (comm.ExecuteNonQuery() != 0)
                         {
-                            reimbursmentID = 1; //success
+                            returnValue = 1; //success
                         }
                         else
                         {
-                            reimbursmentID = -1; //trying to change non pending, or invalid ticketID
+                            returnValue = -1; //trying to change non pending, or invalid ticketID
                         }
                     }
                     finally
@@ -187,13 +160,84 @@ public class RepoLayer : IRepoLayer
                 }
             }
         }
-        else reimbursmentID = -3; //not a manager
 
-        return reimbursmentID;
+        return returnValue;
     }
 
+     public List<Reimbursement>? GetPendingTickets(int managerID)
+    {
+        int validMan = ManagerValidation(managerID);
+        List<Reimbursement> pendingTicketsList = new List<Reimbursement>();
+
+        if(validMan == 1)
+        {
+            using(SqlConnection conn = new SqlConnection(AzureConnectionString))
+            {
+                using(SqlCommand comm = new SqlCommand("SELECT * FROM reimbursment_Tickets WHERE TicketStatus = 1", conn))
+                {
+                    try
+                    {
+                        conn.Open();
+                        SqlDataReader dataReader = comm.ExecuteReader();
+                        while(dataReader.Read())
+                        {
+                            pendingTicketsList.Add(new Reimbursement(dataReader.GetInt32(0), dataReader.GetString(1), dataReader.GetDecimal(2), dataReader.GetString(3), (ReimbursementStatus)dataReader.GetInt32(4), dataReader.GetInt32(5)));
+                        }
+                    }
+                    finally
+                    {
+                        conn.Close();
+                    }
+                }
+            }
+        }
+
+
+        return pendingTicketsList;
+    }
+
+    /// <summary>
+    /// Takes in UserID and verifies if they are a manager in the DB
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <returns>1 if manager, -2 if userID not in DB, -3 if not a manager</returns>
     private int ManagerValidation(int userID)
     {
-        
+        int returnValue = 0;
+        using (SqlConnection validationConn = new SqlConnection(AzureConnectionString))
+        {
+            using (SqlCommand validationComm = new SqlCommand("SELECT Manager FROM registered_users WHERE UserID = @user", validationConn))
+            {
+                validationComm.Parameters.AddWithValue("@user", userID);
+                validationConn.Open();
+                using (SqlDataReader manRead = validationComm.ExecuteReader())
+                {
+                    try
+                    {
+                        if (manRead.Read())
+                        {
+                            if (manRead.GetBoolean(0))
+                            {
+                                returnValue = 1; //is a manager
+                            }
+                            else
+                            {
+                                returnValue = -3; //is not a manager
+                            }
+                        }
+                        else
+                        {
+                            returnValue = -2; //no matching UserID
+                        }
+                    }
+                    finally
+                    {
+                        validationConn.Close();
+                    }
+                }
+
+            }
+            return returnValue;
+        }
     }
 }
