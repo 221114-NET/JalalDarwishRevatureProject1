@@ -3,6 +3,7 @@ namespace ERSUnitTesting;
 using System.Collections.Generic;
 using ERSBusinessLayer;
 using ERSModelsLayer;
+using ERSRepositoryLayer;
 
 public class UnitTest1
 {
@@ -97,5 +98,34 @@ public class UnitTest1
         Assert.Equal(result, testSuccess);
     }
 
-    //#TODO repo get tests
+    //Repo Layer Tests
+    [Theory]
+    [InlineData("UnitTest@test.test", "testing123", 11)]
+    [InlineData("NotReal@fake.fake", "Fake123", -1)]
+    public void TestRepoUserLogin(string eTest, string pwTest, int result)
+    {
+        RepoLayer repo = new RepoLayer(new fakeLogger());
+
+        int testSuccess = repo.UserLogin(eTest, pwTest);
+
+        Assert.Equal(result, testSuccess);
+    }
+
+    [Theory]
+    [InlineData(11, ReimbursementStatus.PENDING)]
+    public void TestRepoGetTickets(int userID, ReimbursementStatus ticketFilter)
+    {
+        RepoLayer repo = new RepoLayer(new fakeLogger());
+
+        Assert.True(repo.GetReimbursements(userID, ticketFilter).Count > 0);
+    }
+
+    [Theory]
+    [InlineData(11)]
+    public void TestRepoUnitTestNonManagerAccountGetsEmptyListOfTickets(int managerID)
+    {
+        RepoLayer repo = new RepoLayer(new fakeLogger());
+
+        Assert.True(repo.GetPendingTickets(11).Count == 0);
+    }
 }
