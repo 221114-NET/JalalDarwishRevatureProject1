@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ERSModelsLayer\ERSModelsLayer.csproj" />
     <ProjectReference Include="..\ERSBusinessLayer\ERSBusinessLayer.csproj" />
+    <ProjectReference Include="..\ERSRepositoryLayer\ERSRepositoryLayer.csproj" />
   </ItemGroup>
 
 </Project>
